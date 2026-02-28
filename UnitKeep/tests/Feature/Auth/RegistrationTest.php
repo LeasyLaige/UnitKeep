@@ -1,19 +1,19 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
+test('registration screen cannot be rendered when registration is disabled', function () {
+    $response = $this->get('/register');
 
-    $response->assertOk();
+    $response->assertNotFound();
 });
 
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
-        'name' => 'Test User',
+test('users cannot register when registration is disabled', function () {
+    $response = $this->post('/register', [
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertGuest();
 });
