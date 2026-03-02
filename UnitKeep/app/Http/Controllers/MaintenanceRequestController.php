@@ -76,4 +76,62 @@ class MaintenanceRequestController extends Controller
 
         return redirect()->route('tenant.dashboard')->with('success', 'Maintenance request submitted.');
     }
+
+    /**
+     * Admin: List all maintenance requests.
+     */
+    public function adminIndex(Request $request): Response
+    {
+        if (! $request->user()->isAdmin()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $statusFilter = $request->query('status', 'all');
+
+        $query = MaintenanceRequest::with(['tenantProfile.user', 'condominiumUnit'])
+            ->latest();
+
+        if ($statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        }
+
+        $requests = $query->get()->map(fn ($r) => [
+            'id' => $r->id,
+            'title' => $r->title,
+            'description' => $r->description,
+            'category' => $r->category,
+            'priority' => $r->priority,
+            'status' => $r->status,
+            'tenant' => $r->tenantProfile->user->full_name,
+            'unit' => $r->condominiumUnit->unit_number . ' · ' . $r->condominiumUnit->building,
+            'created_at' => $r->created_at->format('M d, Y'),
+            'resolved_at' => $r->resolved_at?->format('M d, Y'),
+        ]);
+
+        return Inertia::render('admin/maintenance-requests', [
+            'requests' => $requests,
+            'currentFilter' => $statusFilter,
+        ]);
+    }
+
+    /**
+     * Admin: Update a maintenance request status.
+     */
+    public function adminUpdate(Request $request, MaintenanceRequest $maintenanceRequest): \Illuminate\Http\RedirectResponse
+    {
+        if (! $request->user()->isAdmin()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,resolved,cancelled',
+        ]);
+
+        $maintenanceRequest->update([
+            'status' => $validated['status'],
+            'resolved_at' => $validated['status'] === 'resolved' ? now() : $maintenanceRequest->resolved_at,
+        ]);
+
+        return back()->with('success', 'Maintenance request updated.');
+    }
 }
