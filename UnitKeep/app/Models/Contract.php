@@ -1,53 +1,38 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Models;
 
-return new class extends Migration
+use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Property;
+
+class Contract extends Model
 {
+    protected $fillable = [
+        'tenant_id',
+        'property_id',
+        'start_date',
+        'end_date',
+        'duration',
+        'monthly_rent',
+        'deposit_amount',
+        'status',
+        'is_renewable',
+    ];
+
     /**
-     * Run the migrations.
+     * A contract belongs to a tenant (User)
      */
-    public function up(): void
+    public function tenant()
     {
-        Schema::create('contracts', function (Blueprint $table) {
-            $table->id();
-
-            // Relationships
-            $table->foreignId('tenant_id')
-                ->constrained('users')
-                ->onDelete('cascade');
-
-            $table->foreignId('property_id')
-                ->constrained('properties')
-                ->onDelete('cascade');
-
-            // Lease Details
-            $table->date('start_date');
-            $table->date('end_date');
-
-            $table->enum('duration', ['6_months', '12_months']);
-
-            // Financial Terms
-            $table->decimal('monthly_rent', 10, 2);
-            $table->decimal('deposit_amount', 10, 2)->nullable();
-
-            // Status
-            $table->enum('status', ['active', 'expired', 'terminated'])
-                  ->default('active');
-
-            $table->boolean('is_renewable')->default(true);
-
-            $table->timestamps();
-        });
+        return $this->belongsTo(User::class, 'tenant_id');
     }
 
     /**
-     * Reverse the migrations.
+     * A contract belongs to a property
      */
-    public function down(): void
+    public function property()
     {
-        Schema::dropIfExists('contracts');
+        return $this->belongsTo(Property::class);
     }
-};
+}
