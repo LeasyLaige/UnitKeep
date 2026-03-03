@@ -14,25 +14,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Admin routes
-    Route::middleware('admin')->prefix('admin')->group(function () {
-        Route::get('dashboard', [DashboardController::class, 'admin'])->name('admin.dashboard');
-        Route::get('maintenance-requests', [MaintenanceRequestController::class, 'adminIndex'])->name('admin.maintenance-requests');
-        Route::patch('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'adminUpdate'])->name('admin.maintenance-requests.update');
-    });
-
     Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', [DashboardController::class, 'index'])
+        Route::get('dashboard', [DashboardController::class, 'admin'])
             ->name('dashboard');
 
-        Route::resource('tenants', TenantController::class);
-        Route::resource('properties', PropertyController::class);
-        Route::resource('contracts', ContractController::class);
-    });
+        Route::get('maintenance-requests', [MaintenanceRequestController::class, 'adminIndex'])
+            ->name('maintenance-requests');
 
+        Route::patch('maintenance-requests/{maintenanceRequest}',
+            [MaintenanceRequestController::class, 'adminUpdate'])
+            ->name('maintenance-requests.update');
+
+        Route::resource('tenants', \App\Http\Controllers\Admin\TenantController::class);
+        Route::resource('properties', \App\Http\Controllers\Admin\PropertyController::class);
+        Route::resource('contracts', \App\Http\Controllers\Admin\ContractController::class);
+    });
     // Tenant routes
     Route::middleware('tenant')->prefix('tenant')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'tenant'])->name('tenant.dashboard');
