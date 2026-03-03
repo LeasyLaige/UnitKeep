@@ -60,6 +60,55 @@ class DashboardController extends Controller
     }
 
     /**
+     * Show the tenant's profile page.
+     */
+    public function profile(Request $request): Response
+    {
+        if (! $request->user()->isTenant()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $user = $request->user();
+        $tenant = $user->tenantProfile;
+        $lease = $tenant
+            ? $tenant->leaseContracts()->where('status', 'active')->with('condominiumUnit')->latest()->first()
+            : null;
+        $unit = $lease?->condominiumUnit;
+
+        return Inertia::render('tenant/profile', [
+            'profile' => $tenant ? [
+                'phone' => $tenant->phone,
+                'date_of_birth' => $tenant->date_of_birth?->format('M d, Y'),
+                'address' => $tenant->address,
+                'emergency_contact_name' => $tenant->emergency_contact_name,
+                'emergency_contact_phone' => $tenant->emergency_contact_phone,
+            ] : null,
+            'user' => [
+                'full_name' => $user->full_name,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+            ],
+            'unit' => $unit ? [
+                'unit_number' => $unit->unit_number,
+                'building' => $unit->building,
+                'floor' => $unit->floor,
+                'type' => $unit->type,
+                'area_sqm' => $unit->area_sqm,
+                'status' => $unit->status,
+            ] : null,
+            'lease' => $lease ? [
+                'monthly_rent' => number_format((float) $lease->monthly_rent, 2),
+                'security_deposit' => number_format((float) $lease->security_deposit, 2),
+                'start_date' => $lease->start_date->format('M d, Y'),
+                'end_date' => $lease->end_date->format('M d, Y'),
+                'status' => $lease->status,
+                'terms' => $lease->terms,
+            ] : null,
+        ]);
+    }
+
+    /**
      * Show the tenant dashboard.
      */
     public function tenant(Request $request): Response

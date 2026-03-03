@@ -185,7 +185,13 @@ export default function TenantDashboard({ tenantName, unit, lease, billing, main
                                 <Link href="/tenant/maintenance-request">New Maintenance Request</Link>
                             </Button>
                             <Button variant="outline" asChild>
+                                <Link href="/tenant/maintenance-requests">My Requests</Link>
+                            </Button>
+                            <Button variant="outline" asChild>
                                 <Link href="/tenant/payments">View Payments</Link>
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/tenant/profile">My Profile</Link>
                             </Button>
                         </div>
                     </div>

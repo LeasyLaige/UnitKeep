@@ -10,6 +10,41 @@ use Inertia\Response;
 class MaintenanceRequestController extends Controller
 {
     /**
+     * Tenant: List all of their own maintenance requests.
+     */
+    public function index(Request $request): Response
+    {
+        if (! $request->user()->isTenant()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $tenant = $request->user()->tenantProfile;
+
+        $requests = $tenant
+            ? $tenant->maintenanceRequests()
+                ->with('condominiumUnit')
+                ->latest()
+                ->get()
+                ->map(fn ($r) => [
+                    'id' => $r->id,
+                    'title' => $r->title,
+                    'description' => $r->description,
+                    'category' => $r->category,
+                    'priority' => $r->priority,
+                    'status' => $r->status,
+                    'unit' => $r->condominiumUnit->unit_number . ' · ' . $r->condominiumUnit->building,
+                    'created_at' => $r->created_at->format('M d, Y'),
+                    'resolved_at' => $r->resolved_at?->format('M d, Y'),
+                    'admin_remarks' => $r->admin_remarks,
+                ])
+            : collect();
+
+        return Inertia::render('tenant/maintenance-requests', [
+            'requests' => $requests,
+        ]);
+    }
+
+    /**
      * Show the maintenance request form for the authenticated tenant.
      */
     public function create(Request $request): Response|\Illuminate\Http\RedirectResponse
