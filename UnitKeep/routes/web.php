@@ -20,6 +20,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('maintenance-requests/{maintenanceRequest}', [MaintenanceRequestController::class, 'adminUpdate'])->name('admin.maintenance-requests.update');
     });
 
+    Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        Route::resource('tenants', TenantController::class);
+        Route::resource('properties', PropertyController::class);
+        Route::resource('contracts', ContractController::class);
+    });
+
     // Tenant routes
     Route::middleware('tenant')->prefix('tenant')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'tenant'])->name('tenant.dashboard');
