@@ -1,7 +1,8 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 
 interface BillingRecord {
@@ -53,16 +54,45 @@ const formatCurrency = (amount: string | number) =>
 export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
     const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    const { data, setData, post, processing, reset, errors } = useForm<{
+        receipt: File | null;
+    }>({
+        receipt: null,
+    });
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) {
             setReceiptFile(null);
             setPreviewUrl(null);
+            setData('receipt', null);
             return;
         }
         setReceiptFile(file);
         setPreviewUrl(URL.createObjectURL(file));
+        setData('receipt', file);
+    };
+
+    const handleSubmitReceipt = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!data.receipt) {
+            return;
+        }
+
+        post('/tenant/payments/receipt', {
+            forceFormData: true,
+            onSuccess: () => {
+                reset();
+                setReceiptFile(null);
+                setPreviewUrl(null);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            },
+        });
     };
 
     return (
@@ -123,8 +153,11 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                     </div>
                 </div>
 
-                {/* Receipt upload area — client-side only (no payment gateway) */}
-                <div className="mx-auto w-full max-w-6xl rounded-xl border border-sidebar-border/70 bg-card px-8 py-12 text-center shadow-sm dark:border-sidebar-border">
+                {/* Receipt upload area */}
+                <form
+                    onSubmit={handleSubmitReceipt}
+                    className="mx-auto w-full max-w-6xl rounded-xl border border-sidebar-border/70 bg-card px-8 py-12 text-center shadow-sm dark:border-sidebar-border"
+                >
                     <h2 className="text-lg font-medium">Upload Receipt</h2>
                     <p className="mt-3 text-sm text-muted-foreground">
                         Upload a snapshot of your latest payment receipt (PNG or JPG, up to 5 MB).
@@ -144,6 +177,7 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                             </>
                         )}
                         <input
+                            ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             className="hidden"
@@ -151,12 +185,29 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                         />
                     </label>
 
+                    <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-center">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            Choose image
+                        </Button>
+                        <Button type="submit" disabled={processing || !receiptFile}>
+                            {processing ? 'Submitting...' : 'Submit receipt'}
+                        </Button>
+                    </div>
+
                     {receiptFile && (
                         <p className="mt-4 text-xs text-muted-foreground">
                             Selected file: <span className="font-medium">{receiptFile.name}</span>
                         </p>
                     )}
-                </div>
+
+                    {errors.receipt && (
+                        <p className="mt-2 text-xs text-destructive">{errors.receipt}</p>
+                    )}
+                </form>
             </div>
         </AppLayout>
     );

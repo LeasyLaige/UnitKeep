@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingRecord;
+use App\Models\PaymentReceipt;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,4 +46,29 @@ class PaymentsController extends Controller
             'monthlyRent' => $lease?->monthly_rent ?? '0.00',
         ]);
     }
+
+    /**
+     * Store an uploaded payment receipt image for the tenant.
+     */
+    public function uploadReceipt(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'receipt' => ['required', 'image', 'max:5120'],
+        ]);
+
+        $user = $request->user();
+        /** @var \Illuminate\Http\UploadedFile $file */
+        $file = $validated['receipt'];
+
+        $path = $file->store('payment-receipts', 'public');
+
+        PaymentReceipt::create([
+            'user_id' => $user->id,
+            'path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+        ]);
+
+        return back()->with('success', 'Receipt uploaded successfully.');
+    }
 }
+

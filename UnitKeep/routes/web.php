@@ -48,7 +48,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('tenant')->prefix('tenant')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'tenant'])->name('tenant.dashboard');
         Route::get('profile', [DashboardController::class, 'profile'])->name('tenant.profile');
+
         Route::get('payments', [PaymentsController::class, 'index'])->name('tenant.payments');
+        Route::post('payments/receipt', [PaymentsController::class, 'uploadReceipt'])->name('tenant.payments.upload-receipt');
+
+        Route::get('documents', function () {
+            return Inertia::render('tenant/documents');
+        })->name('tenant.documents');
+
         Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('tenant.maintenance-requests');
         Route::get('maintenance-request', [MaintenanceRequestController::class, 'create'])->name('tenant.maintenance-request.create');
         Route::post('maintenance-request', [MaintenanceRequestController::class, 'store'])->name('tenant.maintenance-request.store');

@@ -41,7 +41,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Documents',
-        href: '/tenant/dashboard',
+        href: '/tenant/documents',
         icon: FileText,
     },
 ];
