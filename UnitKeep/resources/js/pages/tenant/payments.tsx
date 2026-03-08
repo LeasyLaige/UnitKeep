@@ -15,6 +15,7 @@ interface BillingRecord {
     paid_date: string | null;
     remarks: string | null;
     isOverdue: boolean;
+    receipt: { url: string; name: string } | null;
 }
 
 interface Props {
@@ -51,49 +52,115 @@ const formatCurrency = (amount: string | number) =>
         minimumFractionDigits: 2,
     }).format(typeof amount === 'string' ? parseFloat(amount.replace(/,/g, '')) : amount);
 
-export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
-    const [receiptFile, setReceiptFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+function UploadReceiptButton({ billingRecordId }: { billingRecordId: number }) {
+    const [preview, setPreview] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    const { data, setData, post, processing, reset, errors } = useForm<{
+    const { data, setData, post, processing, errors, reset } = useForm<{
         receipt: File | null;
+        billing_record_id: number;
     }>({
         receipt: null,
+        billing_record_id: billingRecordId,
     });
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) {
-            setReceiptFile(null);
-            setPreviewUrl(null);
-            setData('receipt', null);
-            return;
-        }
-        setReceiptFile(file);
-        setPreviewUrl(URL.createObjectURL(file));
+        if (!file) return;
+        setPreview(URL.createObjectURL(file));
         setData('receipt', file);
+        setShowPreview(true);
     };
 
-    const handleSubmitReceipt = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!data.receipt) {
-            return;
-        }
-
+        if (!data.receipt) return;
         post('/tenant/payments/receipt', {
             forceFormData: true,
             onSuccess: () => {
                 reset();
-                setReceiptFile(null);
-                setPreviewUrl(null);
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
+                setPreview(null);
+                setShowPreview(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
             },
         });
     };
+
+    const handleCancel = () => {
+        reset();
+        setPreview(null);
+        setShowPreview(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    return (
+        <>
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                />
+                {preview ? (
+                    <div className="flex items-center gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => setShowPreview(true)}>
+                            Preview
+                        </Button>
+                        <Button type="submit" size="sm" disabled={processing}>
+                            {processing ? 'Uploading…' : 'Submit'}
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={handleCancel}>
+                            ✕
+                        </Button>
+                    </div>
+                ) : (
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                        Upload Proof
+                    </Button>
+                )}
+                {errors.receipt && <span className="text-xs text-destructive">{errors.receipt}</span>}
+            </form>
+
+            {/* Full-size preview modal */}
+            {showPreview && preview && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={() => setShowPreview(false)}
+                >
+                    <div
+                        className="relative max-h-[90vh] max-w-3xl overflow-auto rounded-xl bg-background p-4 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-sm font-medium">Receipt Preview</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
+                                ✕
+                            </Button>
+                        </div>
+                        <img
+                            src={preview}
+                            alt="Receipt preview"
+                            className="max-h-[75vh] w-full rounded-lg object-contain"
+                        />
+                        <div className="mt-4 flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={handleCancel}>
+                                Remove & choose another
+                            </Button>
+                            <Button size="sm" disabled={processing} onClick={handleSubmit}>
+                                {processing ? 'Uploading…' : 'Submit Receipt'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
+    const [viewingReceipt, setViewingReceipt] = useState<{ url: string; name: string } | null>(null);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -120,12 +187,13 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                                     <th className="px-6 py-3 text-right font-medium">Amount Paid</th>
                                     <th className="px-6 py-3 font-medium">Paid Date</th>
                                     <th className="px-6 py-3 text-center font-medium">Status</th>
+                                    <th className="px-6 py-3 text-center font-medium">Payment Proof</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {billingRecords.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                                        <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                                             No billing records yet.
                                         </td>
                                     </tr>
@@ -145,6 +213,19 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                                                     {record.isOverdue ? 'Overdue' : statusLabel(record.status)}
                                                 </Badge>
                                             </td>
+                                            <td className="px-6 py-3 text-center">
+                                                {record.receipt ? (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setViewingReceipt(record.receipt)}
+                                                    >
+                                                        View Proof
+                                                    </Button>
+                                                ) : (
+                                                    <UploadReceiptButton billingRecordId={record.id} />
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -152,63 +233,32 @@ export default function TenantPayments({ billingRecords, monthlyRent }: Props) {
                         </table>
                     </div>
                 </div>
-
-                {/* Receipt upload area */}
-                <form
-                    onSubmit={handleSubmitReceipt}
-                    className="mx-auto w-full max-w-6xl rounded-xl border border-sidebar-border/70 bg-card px-8 py-12 text-center shadow-sm dark:border-sidebar-border"
-                >
-                    <h2 className="text-lg font-medium">Upload Receipt</h2>
-                    <p className="mt-3 text-sm text-muted-foreground">
-                        Upload a snapshot of your latest payment receipt (PNG or JPG, up to 5 MB).
-                    </p>
-
-                    <label className="mt-8 flex h-72 w-full max-w-2xl cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40 text-sm text-muted-foreground transition hover:bg-muted/60 mx-auto md:h-80">
-                        {previewUrl ? (
-                            <img
-                                src={previewUrl}
-                                alt="Selected receipt"
-                                className="h-full w-full rounded-md object-contain bg-background"
-                            />
-                        ) : (
-                            <>
-                                <span className="font-medium">Click to browse</span>
-                                <span className="mt-1 text-xs">or drag and drop an image here</span>
-                            </>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-                    </label>
-
-                    <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-center">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            Choose image
-                        </Button>
-                        <Button type="submit" disabled={processing || !receiptFile}>
-                            {processing ? 'Submitting...' : 'Submit receipt'}
-                        </Button>
-                    </div>
-
-                    {receiptFile && (
-                        <p className="mt-4 text-xs text-muted-foreground">
-                            Selected file: <span className="font-medium">{receiptFile.name}</span>
-                        </p>
-                    )}
-
-                    {errors.receipt && (
-                        <p className="mt-2 text-xs text-destructive">{errors.receipt}</p>
-                    )}
-                </form>
             </div>
+
+            {/* Receipt image modal */}
+            {viewingReceipt && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={() => setViewingReceipt(null)}
+                >
+                    <div
+                        className="relative max-h-[90vh] max-w-3xl overflow-auto rounded-xl bg-background p-4 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-sm font-medium">{viewingReceipt.name}</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setViewingReceipt(null)}>
+                                ✕
+                            </Button>
+                        </div>
+                        <img
+                            src={viewingReceipt.url}
+                            alt={viewingReceipt.name}
+                            className="max-h-[75vh] w-full rounded-lg object-contain"
+                        />
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

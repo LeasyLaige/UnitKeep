@@ -1,10 +1,15 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    Building2,
+    ClipboardList,
     CreditCard,
     FileText,
     Folder,
     LayoutGrid,
+    Receipt,
+    Settings,
+    Users,
     Wrench,
 } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
@@ -21,13 +26,55 @@ import {
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
-import { dashboard } from '@/routes';
 
-const mainNavItems: NavItem[] = [
+const adminNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/admin/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Tenants',
+        href: '/admin/tenants',
+        icon: Users,
+    },
+    {
+        title: 'Units',
+        href: '/admin/units',
+        icon: Building2,
+    },
+    {
+        title: 'Leases',
+        href: '/admin/leases',
+        icon: ClipboardList,
+    },
+    {
+        title: 'Billing',
+        href: '/admin/billing',
+        icon: Receipt,
+    },
+    {
+        title: 'Maintenance',
+        href: '/admin/maintenance-requests',
+        icon: Wrench,
+    },
+    {
+        title: 'Settings',
+        href: '/admin/settings',
+        icon: Settings,
+    },
+];
+
+const tenantNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/tenant/dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Profile',
+        href: '/tenant/profile',
+        icon: Users,
     },
     {
         title: 'Payments',
@@ -35,14 +82,14 @@ const mainNavItems: NavItem[] = [
         icon: CreditCard,
     },
     {
-        title: 'Maintenance',
-        href: '/tenant/maintenance-request',
-        icon: Wrench,
+        title: 'Request History',
+        href: '/tenant/maintenance-requests',
+        icon: FileText,
     },
     {
-        title: 'Documents',
-        href: '/tenant/documents',
-        icon: FileText,
+        title: 'New Request',
+        href: '/tenant/maintenance-request',
+        icon: Wrench,
     },
 ];
 
@@ -60,13 +107,18 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage().props;
+    const user = auth.user;
+    const navItems = user.role === 'admin' ? adminNavItems : tenantNavItems;
+    const dashboardHref = user.role === 'admin' ? '/admin/dashboard' : '/tenant/dashboard';
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={dashboardHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -75,7 +127,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>

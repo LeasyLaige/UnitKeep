@@ -23,6 +23,7 @@ interface BillingRecord {
     due_date: string | null;
     paid_date: string | null;
     remarks: string | null;
+    receipt: { url: string; name: string } | null;
 }
 
 interface Props {
@@ -47,6 +48,7 @@ function statusLabel(status: string): string {
 
 export default function BillingIndex({ records, months, filters }: Props) {
     const [showGenerate, setShowGenerate] = useState(false);
+    const [viewingReceipt, setViewingReceipt] = useState<{ url: string; name: string } | null>(null);
     const generateForm = useForm({ month: '' });
 
     const handleGenerate: FormEventHandler = (e) => {
@@ -168,6 +170,7 @@ export default function BillingIndex({ records, months, filters }: Props) {
                                     <th className="px-4 py-3 font-medium text-muted-foreground">Paid</th>
                                     <th className="px-4 py-3 font-medium text-muted-foreground">Due Date</th>
                                     <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                                    <th className="px-4 py-3 font-medium text-muted-foreground">Proof</th>
                                     <th className="px-4 py-3 font-medium text-muted-foreground text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -184,6 +187,15 @@ export default function BillingIndex({ records, months, filters }: Props) {
                                             <Badge variant={statusColor[r.status] ?? 'secondary'}>
                                                 {statusLabel(r.status)}
                                             </Badge>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {r.receipt ? (
+                                                <Button variant="outline" size="sm" onClick={() => setViewingReceipt(r.receipt)}>
+                                                    View Proof
+                                                </Button>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">None</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             {r.status !== 'paid' && (
@@ -202,6 +214,38 @@ export default function BillingIndex({ records, months, filters }: Props) {
                     </div>
                 )}
             </div>
+
+            {/* Receipt image modal */}
+            {viewingReceipt && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={() => setViewingReceipt(null)}
+                >
+                    <div
+                        className="relative max-h-[90vh] max-w-3xl overflow-auto rounded-xl bg-background p-4 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-sm font-medium">{viewingReceipt.name}</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setViewingReceipt(null)}>
+                                ✕
+                            </Button>
+                        </div>
+                        <img
+                            src={viewingReceipt.url}
+                            alt={viewingReceipt.name}
+                            className="max-h-[75vh] w-full rounded-lg object-contain"
+                        />
+                        <div className="mt-3 text-right">
+                            <Button variant="outline" size="sm" asChild>
+                                <a href={viewingReceipt.url} target="_blank" rel="noopener noreferrer">
+                                    Open in new tab
+                                </a>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

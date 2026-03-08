@@ -17,6 +17,7 @@ class PaymentReceipt extends Model
      */
     protected $fillable = [
         'user_id',
+        'billing_record_id',
         'path',
         'original_name',
     ];
@@ -27,6 +28,14 @@ class PaymentReceipt extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the billing record this receipt belongs to.
+     */
+    public function billingRecord(): BelongsTo
+    {
+        return $this->belongsTo(BillingRecord::class);
     }
 }
 

@@ -70,6 +70,14 @@ class BillingRecord extends Model
     /**
      * Determine if the billing record is overdue.
      */
+    /**
+     * Get the payment receipts for this billing record.
+     */
+    public function paymentReceipts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PaymentReceipt::class);
+    }
+
     public function isOverdue(): bool
     {
         return $this->status !== 'paid' && $this->due_date->isPast();

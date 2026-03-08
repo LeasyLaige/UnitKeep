@@ -22,6 +22,7 @@ class PaymentsController extends Controller
 
         $billingRecords = $tenant
             ? BillingRecord::where('tenant_profile_id', $tenant->id)
+                ->with('paymentReceipts')
                 ->orderByDesc('due_date')
                 ->get()
                 ->map(fn ($b) => [
@@ -34,6 +35,10 @@ class PaymentsController extends Controller
                     'paid_date' => $b->paid_date?->format('M d, Y'),
                     'remarks' => $b->remarks,
                     'isOverdue' => $b->isOverdue(),
+                    'receipt' => $b->paymentReceipts->last() ? [
+                        'url' => asset('storage/' . $b->paymentReceipts->last()->path),
+                        'name' => $b->paymentReceipts->last()->original_name,
+                    ] : null,
                 ])
             : collect();
 
@@ -48,15 +53,23 @@ class PaymentsController extends Controller
     }
 
     /**
-     * Store an uploaded payment receipt image for the tenant.
+     * Store an uploaded payment receipt image for a specific billing record.
      */
     public function uploadReceipt(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'receipt' => ['required', 'image', 'max:5120'],
+            'billing_record_id' => ['required', 'exists:billing_records,id'],
         ]);
 
         $user = $request->user();
+        $tenant = $user->tenantProfile;
+
+        // Verify the billing record belongs to this tenant
+        $billingRecord = BillingRecord::where('id', $validated['billing_record_id'])
+            ->where('tenant_profile_id', $tenant->id)
+            ->firstOrFail();
+
         /** @var \Illuminate\Http\UploadedFile $file */
         $file = $validated['receipt'];
 
@@ -64,6 +77,7 @@ class PaymentsController extends Controller
 
         PaymentReceipt::create([
             'user_id' => $user->id,
+            'billing_record_id' => $billingRecord->id,
             'path' => $path,
             'original_name' => $file->getClientOriginalName(),
         ]);

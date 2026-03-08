@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\LeaseController;
 use App\Http\Controllers\Admin\TenantController;
@@ -42,6 +43,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('billing/generate', [BillingController::class, 'generate'])->name('billing.generate');
             Route::patch('billing/{billing}/mark-paid', [BillingController::class, 'markPaid'])->name('billing.mark-paid');
             Route::patch('billing/{billing}/record-payment', [BillingController::class, 'recordPayment'])->name('billing.record-payment');
+
+            // Admin settings
+            Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings');
+            Route::patch('settings/profile', [AdminSettingsController::class, 'updateProfile'])->name('settings.profile');
+            Route::put('settings/password', [AdminSettingsController::class, 'updatePassword'])->name('settings.password');
         });
 
     // Tenant routes

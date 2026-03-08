@@ -13,7 +13,7 @@ class BillingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = BillingRecord::with(['tenantProfile.user', 'condominiumUnit', 'leaseContract']);
+        $query = BillingRecord::with(['tenantProfile.user', 'condominiumUnit', 'leaseContract', 'paymentReceipts']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -35,6 +35,10 @@ class BillingController extends Controller
                 'due_date' => $r->due_date?->format('M d, Y'),
                 'paid_date' => $r->paid_date?->format('M d, Y'),
                 'remarks' => $r->remarks,
+                'receipt' => $r->paymentReceipts->last() ? [
+                    'url' => asset('storage/' . $r->paymentReceipts->last()->path),
+                    'name' => $r->paymentReceipts->last()->original_name,
+                ] : null,
             ]);
 
         // Available months for filter
