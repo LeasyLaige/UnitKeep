@@ -97,6 +97,60 @@
     --sidebar-ring: oklch(0.87 0 0);
 }
 
+.tenant-theme {
+    --background: hsl(210 80% 98%);
+    --foreground: hsl(216 25% 15%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(216 22% 18%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(216 22% 18%);
+    --primary: hsl(213 100% 45%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(211 100% 92%);
+    --secondary-foreground: hsl(213 50% 24%);
+    --muted: hsl(210 40% 95%);
+    --muted-foreground: hsl(214 15% 45%);
+    --accent: hsl(212 100% 60%);
+    --accent-foreground: hsl(0 0% 100%);
+    --border: hsl(212 60% 85%);
+    --ring: hsl(212 90% 55%);
+    --sidebar: hsl(218 40% 12%);
+    --sidebar-foreground: hsl(0 0% 100%);
+    --sidebar-primary: hsl(213 100% 45%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(206 90% 70%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(214 50% 20%);
+    --sidebar-ring: hsl(212 90% 60%);
+}
+
+.tenant-theme.dark {
+    --background: hsl(212 15% 10%);
+    --foreground: hsl(0 0% 100%);
+    --card: hsl(214 30% 13%);
+    --card-foreground: hsl(0 0% 100%);
+    --popover: hsl(214 30% 13%);
+    --popover-foreground: hsl(0 0% 100%);
+    --primary: hsl(212 90% 65%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(212 60% 20%);
+    --secondary-foreground: hsl(0 0% 100%);
+    --muted: hsl(214 25% 18%);
+    --muted-foreground: hsl(0 0% 100%);
+    --accent: hsl(212 80% 55%);
+    --accent-foreground: hsl(0 0% 100%);
+    --border: hsl(214 40% 25%);
+    --ring: hsl(212 90% 65%);
+    --sidebar: hsl(212 30% 10%);
+    --sidebar-foreground: hsl(0 0% 100%);
+    --sidebar-primary: hsl(213 100% 45%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(206 90% 70%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(214 40% 25%);
+    --sidebar-ring: hsl(212 90% 65%);
+}
+
 .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);

@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -8,8 +9,11 @@ export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
 }: AppLayoutProps) {
+    const { auth } = usePage().props;
+    const themeClass = auth?.user?.role === 'tenant' ? 'tenant-theme' : '';
+
     return (
-        <AppShell variant="sidebar">
+        <AppShell variant="sidebar" className={themeClass}>
             <AppSidebar />
             <AppContent variant="sidebar" className="overflow-x-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
