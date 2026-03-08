@@ -8,8 +8,8 @@ use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\TenantDocumentController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -63,21 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('tenant/documents');
         })->name('tenant.documents');
 
-        Route::get('documents/{document}', function (string $document) {
-            $documents = [
-                'lease-agreement-form' => 'lease-agreement-form.pdf',
-                'move-in-inspection-form' => 'move-in-inspection-form.pdf',
-                'tenant-information-update-form' => 'tenant-information-update-form.pdf',
-            ];
-
-            abort_unless(array_key_exists($document, $documents), 404);
-
-            $path = 'documents/'.$documents[$document];
-
-            abort_unless(Storage::disk('public')->exists($path), 404);
-
-            return response()->download(Storage::disk('public')->path($path), $documents[$document]);
-        })->name('tenant.documents.download');
+        Route::get('documents/{document}', [TenantDocumentController::class, 'download'])
+            ->name('tenant.documents.download');
 
         Route::get('maintenance-requests', [MaintenanceRequestController::class, 'index'])->name('tenant.maintenance-requests');
         Route::get('maintenance-request', [MaintenanceRequestController::class, 'create'])->name('tenant.maintenance-request.create');
