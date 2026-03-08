@@ -1,8 +1,8 @@
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import type { BreadcrumbItem } from '@/types';
 import { Download, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,21 +28,21 @@ const documents: TenantDocument[] = [
         title: 'Lease Agreement Form',
         description:
             'Standard lease agreement between tenant and property management. Review and keep a signed copy for your records.',
-        href: '/storage/documents/lease-agreement-form.pdf',
+        href: '/tenant/documents/lease-agreement-form',
     },
     {
         id: 'move-in-inspection',
         title: 'Move-In Inspection Form',
         description:
             'Use this form during move-in to document the condition of your unit and note any existing issues.',
-        href: '/storage/documents/move-in-inspection-form.pdf',
+        href: '/tenant/documents/move-in-inspection-form',
     },
     {
         id: 'tenant-info-update',
         title: 'Tenant Information Update Form',
         description:
             'Update your contact details, emergency contact, or other personal information on file.',
-        href: '/storage/documents/tenant-information-update-form.pdf',
+        href: '/tenant/documents/tenant-information-update-form',
     },
 ];
 
