@@ -91,6 +91,11 @@ const tenantNavItems: NavItem[] = [
         href: '/tenant/maintenance-request',
         icon: Wrench,
     },
+    {
+        title: 'Documents',
+        href: '/tenant/documents',
+        icon: Folder,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
