@@ -35,9 +35,9 @@ class BillingController extends Controller
                 'due_date' => $r->due_date?->format('M d, Y'),
                 'paid_date' => $r->paid_date?->format('M d, Y'),
                 'remarks' => $r->remarks,
-                'receipt' => $r->paymentReceipts->last() ? [
-                    'url' => asset('storage/' . $r->paymentReceipts->last()->path),
-                    'name' => $r->paymentReceipts->last()->original_name,
+                'receipt' => ($receipt = $r->paymentReceipts->last()) ? [
+                    'url' => route('payments.receipt', $receipt->id),
+                    'name' => $receipt->original_name,
                 ] : null,
             ]);
 

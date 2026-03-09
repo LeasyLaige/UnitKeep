@@ -35,9 +35,9 @@ class PaymentsController extends Controller
                     'paid_date' => $b->paid_date?->format('M d, Y'),
                     'remarks' => $b->remarks,
                     'isOverdue' => $b->isOverdue(),
-                    'receipt' => $b->paymentReceipts->last() ? [
-                        'url' => asset('storage/' . $b->paymentReceipts->last()->path),
-                        'name' => $b->paymentReceipts->last()->original_name,
+                    'receipt' => ($receipt = $b->paymentReceipts->last()) ? [
+                        'url' => route('payments.receipt', $receipt->id),
+                        'name' => $receipt->original_name,
                     ] : null,
                 ])
             : collect();
@@ -83,6 +83,26 @@ class PaymentsController extends Controller
         ]);
 
         return back()->with('success', 'Receipt uploaded successfully.');
+    }
+
+    /**
+     * Display a stored payment receipt image.
+     */
+    public function showReceipt(Request $request, PaymentReceipt $receipt)
+    {
+        $user = $request->user();
+
+        // Admins can view any receipt; tenants can only view their own.
+        if (! $user->isAdmin()) {
+            $tenant = $user->tenantProfile;
+            abort_unless($tenant && $receipt->billingRecord?->tenant_profile_id === $tenant->id, 403);
+        }
+
+        if (! Storage::disk('public')->exists($receipt->path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($receipt->path, $receipt->original_name);
     }
 }
 

@@ -51,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('settings/password', [AdminSettingsController::class, 'updatePassword'])->name('settings.password');
         });
 
+    // Shared routes (accessible to both admins and tenants)
+    Route::get('payments/receipt/{receipt}', [PaymentsController::class, 'showReceipt'])->name('payments.receipt');
+
     // Tenant routes
     Route::middleware('tenant')->prefix('tenant')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'tenant'])->name('tenant.dashboard');
