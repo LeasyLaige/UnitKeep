@@ -29,11 +29,11 @@ export default function Welcome() {
                 />
             </Head>
 
-            <div className="min-h-screen bg-[linear-gradient(180deg,#f6f8f7_0%,#eef2ef_100%)] text-slate-950 dark:bg-[linear-gradient(180deg,#0f172a_0%,#111827_100%)] dark:text-slate-50">
+            <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#edf4ff_100%)] text-slate-950 dark:bg-[linear-gradient(180deg,#0b1220_0%,#0f1b33_100%)] dark:text-slate-50">
                 <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8 lg:px-10 lg:py-10">
                     <header className="flex items-center justify-between gap-4">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700 dark:text-emerald-400">
+                            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-700 dark:text-blue-300">
                                 UnitKeep
                             </p>
                             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
@@ -60,7 +60,7 @@ export default function Welcome() {
 
                     <main className="grid flex-1 items-center gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
                         <section>
-                            <div className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800 dark:border-emerald-900/70 dark:bg-emerald-950/50 dark:text-emerald-300">
+                            <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 dark:border-blue-900/70 dark:bg-blue-950/50 dark:text-blue-300">
                                 Built for property operations
                             </div>
 
@@ -77,25 +77,18 @@ export default function Welcome() {
                                 {auth.user ? (
                                     <Link
                                         href={dashboard()}
-                                        className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                                        className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
                                     >
                                         Go to dashboard
                                     </Link>
                                 ) : (
                                     <Link
                                         href={login()}
-                                        className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                                        className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
                                     >
                                         Sign in to UnitKeep
                                     </Link>
                                 )}
-
-                                <a
-                                    href="#features"
-                                    className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white/80 dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900/60"
-                                >
-                                    View features
-                                </a>
                             </div>
                         </section>
 
@@ -109,10 +102,10 @@ export default function Welcome() {
                                     </p>
                                 </div>
 
-                                <div className="rounded-2xl bg-emerald-600 p-5 text-white">
-                                    <p className="text-sm font-medium text-emerald-100">Role-based access</p>
+                                <div className="rounded-2xl bg-blue-600 p-5 text-white">
+                                    <p className="text-sm font-medium text-blue-100">Role-based access</p>
                                     <p className="mt-3 text-3xl font-semibold">2</p>
-                                    <p className="mt-2 text-sm text-emerald-50/90">
+                                    <p className="mt-2 text-sm text-blue-100/90">
                                         Separate admin and tenant experiences.
                                     </p>
                                 </div>
@@ -123,7 +116,7 @@ export default function Welcome() {
                                 <ul className="mt-4 space-y-3">
                                     {highlights.map((highlight) => (
                                         <li key={highlight} className="flex gap-3 text-sm leading-6 text-slate-700 dark:text-slate-200">
-                                            <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                                            <span className="mt-1 h-2.5 w-2.5 rounded-full bg-blue-500" />
                                             <span>{highlight}</span>
                                         </li>
                                     ))}
